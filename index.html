@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>COVID-19 in PA</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.mapbox.com/mapbox.js/v3.3.0/mapbox.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/v3.3.0/mapbox.css' rel='stylesheet' />
+
+    <style>
+             body {
+            margin: 0;
+            padding: 0;
+            background: #403e44;
+            font-family: "Century Gothic", CenturyGothic, sans-serif;
+            color: #fbf7f5;
+        }
+        header {
+            padding: 10px 10%;
+        }
+   h1 {
+			font-family: "Century Gothic", CenturyGothic, sans-serif;
+			color: "#fbf7f5";
+			font-size: 16px;
+			margin-left: 10px;
+        }
+            h2 {
+			font-family: "Century Gothic", CenturyGothic, sans-serif;
+			color: "#fbf7f5";
+			font-size: 20px;
+			margin-left: 10px;
+        }
+
+ #map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+/**
+* Set rules for how the map overlays
+* (information box and legend) will be displayed
+* on the page. */
+.map-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-family: "Century Gothic", CenturyGothic, sans-serif;
+  background: rgba(216, 205, 234, 0.69);
+  margin-right: 20px;
+  overflow: auto;
+  border-radius: 3px;
+}
+
+
+#titlebox{
+  top: 0;
+  height: 110px;
+  margin-top: 20px;
+  width: 330px;
+	}
+.title-box{
+  position: absolute;
+  bottom: 0;
+  right: 0;
+	margin-right: 40px;
+	  font-family: "Century Gothic", CenturyGothic, sans-serif;
+  background: rgba(216, 205, 234, 0.69);
+  margin-left: 50px;
+  overflow: auto;
+  border-radius: 2px;	
+	}
+#legend {
+  padding: 8px;
+  line-height: 18px;
+  height: 210px;
+  margin-bottom: 40px;
+  margin-left: 40px;
+  width: 200px;
+  left: 0;
+}
+
+.legend-key {
+  display: inline-block;
+  color: rgba(251, 195, 74, 0.69);
+  border-radius: 20%;
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+}
+.leaflet-control-layers-expanded { 
+	bottom: 0;
+	left: 0;
+	background: rgba(216, 205, 234, 0.69); }
+		
+.leaflet-popup-content-wrapper{
+			background-color: rgba(216, 205, 234, 0.89);
+		}
+		.leaflet-popup-content {
+			font-family: "Century Gothic", CenturyGothic, sans-serif;
+			font-size: 12px;
+		}
+
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class='map-overlay' id='legend'><h1>Confirmed cases: county-wide total</h1></div>
+<div class='title-box' id='titlebox'><h2>COVID-19 in Pennsylvania: a Snapshot of Cases in Nursing Home/Personal Care Facilities</h2></div>
+
+
+
+    <script src="PA_COVID_updated_centroids.geojson"></script>
+    <script>
+
+L.mapbox.accessToken = 'pk.eyJ1Ijoia2VyaWtsaW5nZXMiLCJhIjoiY2s4YnYwc3AxMGN0MjNra2F0a3k0cWNrayJ9.ueaghC1N7GY5FI9ArXr8wg';
+var map = L.map('map').setView([40.869177, -77.822079],7).addLayer(L.mapbox.styleLayer('mapbox://styles/keriklinges/ck9kh81qs1r3z1ippkn3qaihh'));
+  
+        //-----------------------Facilities Layer-------------------------- 
+    
+    
+        var commonStyles = {
+        weight: 1,
+        stroke: 1,
+        fillOpacity: .8
+        }
+		
+		var facilities = L.geoJson(rona, {
+          pointToLayer: function(feature,coordinates) {
+              return L.circleMarker(coordinates, commonStyles);
+          },
+      filter : function(feature) {if(feature.properties["Number of Facilities with Cases"]){
+                  return feature;
+              }
+          },
+         style: function(feature) {
+             return {
+                 color: '#75cdc8',
+                 fillColor: '#75cdc8',
+                 radius: getRadius(feature.properties["Number of Facilities with Cases"])
+             }
+         },
+          onEachFeature : function(feature,layer) {
+    layer.on('mouseover', function() {
+    layer.setStyle({
+        fillColor: '#2d7c78'
+    });
+});
+layer.on('mouseout', function() { 
+    layer.setStyle({
+        fillColor: '#75cdc8'
+    });
+});
+ var num = feature.properties["Number of Facilities with Cases"]
+
+      
+ var popup = ("<b>Number of facilities with cases: </b>"+ num)
+                       layer.bindPopup(popup)
+          }
+    
+          
+      }).addTo(map);
+    
+
+
+        function getRadius(val){
+        var radius = Math.sqrt(val/Math.PI);
+        return radius *2
+    }
+
+    facilities.setStyle({
+    color: '#75cdc8',
+    fillColor: '#75cdc8'
+});
+           //-----------------------Total Deaths-------------------------- 
+      var deaths = L.geoJson(rona, {
+          pointToLayer: function(feature,latlng) {
+              return L.circleMarker(latlng, commonStyles);
+          },
+      filter : function(feature) {          if(feature.properties["Deaths"]>0){
+                  return feature;
+              }
+          },
+         style: function(feature) {
+             return {
+                 color: '#cc5100',
+                 fillColor: '#cc5100',
+                 radius: getRadius(feature.properties["Deaths"])
+             }
+         },
+          onEachFeature : function(feature,layer) {
+    layer.on('mouseover', function() {
+    layer.setStyle({
+        fillColor: '#a34000'
+    });
+});
+layer.on('mouseout', function() {
+    layer.setStyle({
+        fillColor: '#cc5100'
+    });
+});
+var num = feature.properties["Deaths"]
+
+ var popup = ("<b>Total deaths:  </b>"+ num)
+                       layer.bindPopup(popup)
+          }
+      }).addTo(map);
+        var commonStyles = {
+        weight: 1,
+        stroke: 1,
+        fillOpacity: .8
+        }
+
+        function getRadius(val){
+        var radius = Math.sqrt(val/Math.PI);
+        return radius * 2  
+    }    
+    deaths.setStyle({
+        color: '#cc5100',
+        fillColor: '#cc5100'
+    });  
+         //-----------------------Nursing home deaths--------------------------   
+    var nrs_deaths = L.geoJson(rona, {
+    pointToLayer: function(feature,latlng) {
+              return L.circleMarker(latlng, commonStyles);
+          },
+      filter : function(feature) {          if(feature.properties["Number of Deaths"]){
+                  return feature;
+              }
+          },
+         style: function(feature) {
+             return {
+                 color: '#fdc344',
+                 fillColor: '#fdc344',
+                 radius: getRadius(feature.properties["Number of Deaths"])
+             }
+         },
+            onEachFeature : function(feature,layer) {
+    layer.on('mouseover', function() {
+    layer.setStyle({
+        fillColor: '#ca8c02'
+    });
+});
+layer.on('mouseout', function() { 
+    layer.setStyle({
+        fillColor: '#fdc344'
+    });
+});
+ var num = feature.properties["Number of Deaths"]
+
+      
+ var popup = ("<b>Deaths associated with nursing home/personal care homes: </b>"+ num)
+                       layer.bindPopup(popup)
+          }
+      }).addTo(map);
+        var commonStyles = {
+        weight: 1,
+        stroke: 1,
+        fillOpacity: .8
+        }
+
+        function getRadius(val){
+        var radius = Math.sqrt(val/Math.PI);
+        return radius * 2   
+    }    
+    nrs_deaths.setStyle({
+        color: '#fdc344',
+        fillColor: '#fdc344'
+    });
+var sourcesLayers = {
+    "<b style='color:#2d7c78'>Facilities with cases</b>": facilities,
+    "<b style='color:#a34000'>Total deaths</b>": deaths,
+    "<b style='color:#fdc344'>Deaths associated with nursing home/personal care facilities</b>": nrs_deaths,
+}
+
+
+L.control.layers(null, sourcesLayers,{position: 'topleft'}).addTo(map);
+		
+map.attributionControl.addAttribution('Map Created by Keri Klinges')			
+map.attributionControl.addAttribution('COVID data &copy; <a href="https://www.health.pa.gov/topics/disease/coronavirus/Pages/Coronavirus.aspx">PA Department of Health</a>')
+map.attributionControl.addAttribution('Map Tiles &copy; <a href="https://studio.mapbox.com/">Mapbox</a>')	
+	
+		
+		var layers = ['1-10', '10-50', '50-100', '100-500', '500-1,000', '1,000-2,000', '2,000-10,000',  '10,000+'];
+var colors = ['#eedaf2', '#e3c2e9', '#d8a9e0', '#cd91d7', '#c178ce', '#b660c5', '#8a3798', '#451c4c', '#2e1233'];
+        
+for (i = 0; i < layers.length; i++) {
+  var layer = layers[i];
+  var color = colors[i];
+  var item = document.createElement('div');
+  var key = document.createElement('span');
+  key.className = 'legend-key';
+  key.style.backgroundColor = color;
+
+  var value = document.createElement('span');
+  value.innerHTML = layer;
+  item.appendChild(key);
+  item.appendChild(value);
+  legend.appendChild(item);
+}
+
+        
+    </script>
+    
+</body>
+
+</html>
