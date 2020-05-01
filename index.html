@@ -130,7 +130,7 @@ var map = L.map('map').setView([40.869177, -77.822079],7).addLayer(L.mapbox.styl
           pointToLayer: function(feature,coordinates) {
               return L.circleMarker(coordinates, commonStyles);
           },
-      filter : function(feature) {if(feature.properties["Number of Facilities with Cases"]){
+      filter : function(feature) {if(feature.properties["Number of Facilities with Cases"] > 0){
                   return feature;
               }
           },
@@ -178,7 +178,7 @@ layer.on('mouseout', function() {
           pointToLayer: function(feature,latlng) {
               return L.circleMarker(latlng, commonStyles);
           },
-      filter : function(feature) {          if(feature.properties["Deaths"]>0){
+      filter : function(feature) {          if(feature.properties["Deaths"]){
                   return feature;
               }
           },
@@ -225,7 +225,7 @@ var num = feature.properties["Deaths"]
     pointToLayer: function(feature,latlng) {
               return L.circleMarker(latlng, commonStyles);
           },
-      filter : function(feature) {          if(feature.properties["Number of Deaths"]){
+      filter : function(feature) {          if(feature.properties["Number of Deaths"]>0){
                   return feature;
               }
           },
